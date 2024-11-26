@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy Master</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Body and Container */
+        body {
+            background-color: #2c2f33;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+        }
+
+        
+
+        /* Header */
+        .header {
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header img {
+            width: 100%; /* Make the logo image cover the entire header width */
+            max-height: 200px;
+            object-fit: contain;
+        }
+
+        /* About Section */
+        .about {
+            background-color: #5b88c4;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .about h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .about p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Navigation Links with Blue Background */
+        .nav-links-section {
+            background-color: #5b88c4;
+            padding: 15px 0;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 16px;
+            background-color: #16163f;  /* Dark blue background */
+            padding: 8px 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: #00ffff;  /* Cyan on hover */
+            color: #16163f;
+            transform: translateY(-2px);
+        }
+
+        /* Style specifically for login/signup links */
+        .login-links a {
+            background-color: #2c2f33;  /* Different background for login/signup */
+        }
+
+        .login-links a:hover {
+            background-color: #00ffff;
+            color: #16163f;
+        }
+
+        /* Footer Section */
+        .footer {
+            background-color: #16163f;
+            padding: 40px 20px;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section {
+            text-align: center;
+        }
+
+        .footer-section h3 {
+            color: #00ffff;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .footer-section p {
+            color: #ffffff;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .footer-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .footer-icons a {
+            background-color: #ffffff;
+            border-radius: 50%;
+            padding: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .footer-icons a:hover {
+            transform: translateY(-5px);
+        }
+
+        .footer-icons img {
+            width: 25px;
+            height: 25px;
+        }
+
+        .contact-info {
+            margin-top: 20px;
+        }
+
+        .footer p.slogan {
+            font-size: 16px;
+            color: #00ffff;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .copyright {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #ffffff;
+        }
+
+        /* Add these new styles */
+        .welcome-section {
+            background-color: #5b88c4;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .welcome-section input {
+            padding: 8px 15px;
+            font-size: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            background-color: #ffffff;
+            color: #2c2f33;
+            width: 200px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Replace the existing top-bar style with this */
+        .top-bar {
+            position: absolute;
+            top: 180px;  /* Adjusted to align with bottom of header */
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;  /* Ensure it stays above other elements */
+        }
+
+        .user-display {
+            background-color: #ffffff;
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
+            color: #2c2f33;
+            width: 150px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  /* Optional: adds subtle shadow */
+        }
+
+        /* Ensure the container maintains proper positioning */
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .services-header {
+            background-color: #5b88c4;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .services-header h2 {
+            color: #ffffff;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .services-list {
+            background-color: #5b88c4;
+            padding: 30px;
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .service-item {
+            background-color: #16163f;
+            border-radius: 8px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .service-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .service-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .service-item h3 {
+            color: #00ffff;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .service-item p {
+            color: #ffffff;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* Make it responsive */
+        @media (max-width: 1000px) {
+            .services-list {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .service-item {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        /* Update these specific style blocks */
+        .about {
+            background-color: #5b88c4;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .services-header {
+            background-color: #5b88c4;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .services-list {
+            background-color: #5b88c4;
+            padding: 30px;
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .nav-links-section {
+            background-color: #5b88c4;
+            padding: 15px 0;
+        }
+
+        /* Remove any margin-bottom properties that were creating gaps */
+        .about, .services-header, .services-list, .nav-links-section {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Add this new top-bar section before the header -->
+        <div class="top-bar">
+            <input type="text" id="displayUsername" class="user-display" readonly>
+        </div>
+
+        <!-- Header Section -->
+        <div class="header">
+            <img src="DP_logo.png" alt="Deploy Master Logo">
+        </div>
+
+        <!-- About Us Section -->
+        <div class="about">
+            <h2>ABOUT US</h2>
+            <p>"At Deploy Master, we specialize in deploying critical services with precision and reliability. From fire stations to emergency response centers, our mission is to bring essential infrastructures to life, ensuring they’re ready to serve when every second counts. With a commitment to excellence and a focus on safety, Deploy Master is here to deliver the backbone of your community's most vital services."</p>
+        </div>
+
+        <!-- Services Header -->
+        <div class="services-header">
+            <h2>The Services we offer are:</h2>
+        </div>
+
+        <!-- Services List -->
+        <div class="services-list">
+            <div class="service-item">
+                <div class="service-icon">🚀</div>
+                <h3>Deploy a specific number of Services</h3>
+                <p>Choose and deploy multiple services simultaneously with our efficient deployment system.</p>
+            </div>
+            
+            <div class="service-item">
+                <div class="service-icon">➕</div>
+                <h3>Add multiple Assets from user's choice</h3>
+                <p>Customize and add various assets according to your specific requirements and preferences.</p>
+            </div>
+            
+            <div class="service-item">
+                <div class="service-icon">🔍</div>
+                <h3>Retrieve the details of an Asset</h3>
+                <p>Access comprehensive information about any deployed asset with our detailed retrieval system.</p>
+            </div>
+        </div>
+
+        <!-- Navigation Links Section -->
+        <div class="nav-links-section">
+            <div class="nav-links">
+                <a href="index.html">Page 1</a>
+                <a href="page2.html">Page 2</a>
+                <a href="page3.html">Page 3</a>
+            </div>
+        </div>
+
+        <!-- Log In and Sign Up Links -->
+        <div class="nav-links-section">
+            <div class="nav-links login-links">
+                <a href="login.html">Log In</a>
+                <a href="#" id="guestLink">Guest</a>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>About Deploy Master</h3>
+                    <p>Leading the way in critical infrastructure deployment with precision, reliability, and innovation.</p>
+                    <div class="footer-icons">
+                        <a href="#linkedin"><img src="linkedin_icon.png" alt="LinkedIn"></a>
+                        <a href="#instagram"><img src="insta_icon.png" alt="Instagram"></a>
+                        <a href="#github"><img src="github_icon.png" alt="GitHub"></a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <div class="contact-info">
+                        <p>📧 Deploy_Master@gmail.com</p>
+                        <p>📱 +971 06 545 2928</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="slogan">Step Into a <span style="color: #00ffff;">New Era</span> of Deployment !!</p>
+            <p class="copyright">Privacy Policy | Terms & Conditions</p>
+        </div>
+    </div>
+
+    <!-- Add this script just before the closing body tag -->
+    <script>
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        window.onload = function() {
+            var username = getUrlParameter('username');
+            if (username) {
+                // Store username in sessionStorage when received from URL
+                sessionStorage.setItem('username', username);
+            } else {
+                // Try to get username from sessionStorage if not in URL
+                username = sessionStorage.getItem('username');
+            }
+            
+            document.getElementById('displayUsername').value = username || '';
+
+            // Add click event listener for guest link if it exists
+            var guestLink = document.getElementById('guestLink');
+            if (guestLink) {
+                guestLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    sessionStorage.setItem('username', 'Guest');
+                    document.getElementById('displayUsername').value = 'Guest';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

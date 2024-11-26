@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy Master - Distance Calculator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #2c2f33;
+            min-height: 100vh;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background-color: #5b88c4;
+            padding: 15px 0;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 16px;
+            background-color: #16163f;
+            padding: 8px 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: #00ffff;
+            color: #16163f;
+        }
+
+        .user-display {
+            background-color: #ffffff;
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
+            color: #2c2f33;
+            width: 150px;
+            text-align: center;
+        }
+
+        /* Map Styles */
+        #map {
+            position: relative;
+            height: 70vh;
+            width: 80%;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Info Boxes */
+        .info-boxes {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .info-box {
+            background-color: #16163f;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .info-label {
+            color: #00ffff;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Button Container */
+        .button-container {
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        .button-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 20px;
+        }
+
+        .clear-btn {
+            background-color: #16163f;
+            color: #ffffff;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-btn:hover {
+            background-color: #00ffff;
+            color: #16163f;
+            transform: translateY(-2px);
+        }
+
+        .locations-container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #16163f;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .locations-list {
+            display: grid;
+            gap: 10px;
+            padding-right: 10px;
+        }
+
+        .location-item {
+            background-color: #5b88c4;
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .location-name {
+            font-weight: bold;
+        }
+
+        .location-distance {
+            color: #00ffff;
+        }
+
+        .location-item[style*="rgb(44, 47, 51)"] .location-distance {  /* For excluded items */
+            color: #888;
+            font-style: italic;
+        }
+
+        .instructions {
+            color: #ffffff;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 16px;
+            background-color: #5b88c4;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        /* Scrollbar styling */
+        .locations-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .locations-container::-webkit-scrollbar-track {
+            background: #16163f;
+            border-radius: 4px;
+        }
+
+        .locations-container::-webkit-scrollbar-thumb {
+            background: #5b88c4;
+            border-radius: 4px;
+        }
+
+        .locations-container::-webkit-scrollbar-thumb:hover {
+            background: #00ffff;
+        }
+
+        .clustering-controls {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #16163f;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-input {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #ffffff;
+        }
+
+        .service-input input {
+            width: 60px;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .cluster-btn {
+            background-color: #5b88c4;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cluster-btn:hover {
+            background-color: #00ffff;
+            color: #16163f;
+        }
+
+        .cluster-marker {
+            background-color: #ff3366;
+            border: 2px solid #16163f;
+            color: white;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        .service-section {
+            margin-bottom: 20px;
+            background-color: #16163f;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .service-header {
+            background-color: #5b88c4;
+            padding: 10px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .service-locations {
+            padding: 10px;
+        }
+
+        .location-item {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: rgba(91, 136, 196, 0.2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="nav-bar">
+        <div class="nav-links">
+            <a href="Home_Page.html">Home Page</a>
+            <a href="index.html">Page 1</a>
+            <a href="page2.html">Page 2</a>
+            <a href="page3.html">Page 3</a>
+        </div>
+        <input type="text" id="displayUsername" class="user-display" readonly>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Info Boxes -->
+    <div class="info-boxes">
+        <div class="info-box">
+            <div class="info-label">Total Distance to All Locations</div>
+            <div id="totalDistance" class="info-value">0 km</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">Total Time</div>
+            <div id="totalTime" class="info-value">0 min</div>
+        </div>
+    </div>
+
+    <!-- Add a locations list container -->
+    <div class="locations-container">
+        <div class="locations-list" id="locationsList">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Clear Button -->
+    <div class="button-container">
+        <div class="button-wrapper">
+            <button onclick="clearAll()" class="clear-btn">Clear</button>
+        </div>
+    </div>
+
+    <!-- Add this HTML after your existing info boxes -->
+    <div class="clustering-controls">
+        <div class="service-input">
+            <label>Number of Services to Deploy (1-5):</label>
+            <input type="number" id="numServices" min="1" max="5" value="1">
+        </div>
+        <button onclick="deployServices()" class="cluster-btn">Deploy Services</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script>
+        // Fixed locations
+        const fixedLocations = [
+            { coords: [25.1972, 55.2794], name: "Dubai Mall" },
+            { coords: [25.3294, 55.5175], name: "Sharjah Airport" },
+            { coords: [25.2532, 55.3657], name: "Dubai Airport" },
+            { coords: [25.3214, 55.3949], name: "Expo Center Sharjah" },
+            { coords: [25.2048, 55.2708], name: "Museum of the Future" },
+            { coords: [25.1413, 55.1852], name: "Burj Al Arab" },
+            { coords: [25.1189, 55.2006], name: "Mall of the Emirates" },
+            { coords: [25.3203, 55.4491], name: "City Centre Al Zahia" },
+            { coords: [25.2338, 55.2804], name: "Zaabel Palace" },
+            { coords: [25.3199, 55.4760], name: "University of Sharjah" },
+            { coords: [25.3667, 55.4050], name: "Central Souq" },
+            { coords: [25.3165, 55.3769], name: "Al Qasba" },
+            { coords: [25.3465, 55.4253], name: "Industrial Area" },
+            { coords: [25.3117, 55.3837], name: "Al Taawun" },
+            { coords: [25.3562, 55.3985], name: "Al Qasimia" },
+            { coords: [25.1394, 55.2374], name: "Al Quoz" },
+            { coords: [25.1124, 55.1380], name: "Palm Jumeirah" },
+            { coords: [25.0846, 55.1371], name: "Bluewaters" },
+            { coords: [25.3215, 55.3332], name: "Al Mamzar Park" },
+            { coords: [25.2413, 55.3302], name: "Creek Park" },
+            { coords: [25.1972, 55.2744], name: "Burj Khalifa" },
+            { coords: [25.2048, 55.2708], name: "The Dubai Fountain" },
+            { coords: [25.1189, 55.2006], name: "Ski Dubai" },
+            { coords: [25.0777, 55.1406], name: "Dubai Marina" },
+            { coords: [25.2175, 55.2507], name: "Jumeirah Beach" }
+        ];
+
+        // Custom marker icons
+        const excludedIcon = L.divIcon({
+            className: 'excluded-marker',
+            html: `<div style="
+                background-color: #16163f; 
+                width: 12px; 
+                height: 12px; 
+                border-radius: 50%; 
+                border: 2px solid #888;"
+            ></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        });
+
+        const includedIcon = L.divIcon({
+            className: 'included-marker',
+            html: `<div style="
+                width: 20px;
+                height: 20px;
+                background-color: #00ffff;
+                clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+                transform: rotate(45deg);
+                border: 2px solid #16163f;"
+            ></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        const userIcon = L.divIcon({
+            className: 'user-marker',
+            html: `<div style="
+                width: 24px;
+                height: 24px;
+                background-color: #ff3366;
+                clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+                transform: rotate(45deg);
+                border: 2px solid #16163f;
+                box-shadow: 0 0 10px rgba(0,0,0,0.5);"
+            ></div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+
+        // Initialize map and markers
+        var map = L.map('map').setView([25.2048, 55.2708], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var userMarker = null;
+        var routingControls = [];
+        var locationMarkers = [];
+        var clusterMarkers = [];
+
+        // Initial markers for fixed locations
+        fixedLocations.forEach(loc => {
+            const marker = L.marker(loc.coords, {
+                icon: excludedIcon
+            }).addTo(map);
+            marker.bindPopup(loc.name);
+            locationMarkers.push(marker);
+        });
+
+        async function calculateServiceDistances(includedLocations, serviceCentroids) {
+            // Clear previous routes
+            routingControls.forEach(control => map.removeControl(control));
+            routingControls = [];
+
+            const locationsList = document.getElementById('locationsList');
+            locationsList.innerHTML = '<h3 style="color: #00ffff; margin-bottom: 10px;">Service Coverage Analysis</h3>';
+
+            let totalSystemDistance = 0;
+            let totalSystemTime = 0;
+
+            // Create a section for each service
+            for (let i = 0; i < serviceCentroids.length; i++) {
+                const serviceSection = document.createElement('div');
+                serviceSection.className = 'service-section';
+                serviceSection.innerHTML = `
+                    <div class="service-header">Service ${i + 1}</div>
+                    <div class="service-locations"></div>
+                `;
+                locationsList.appendChild(serviceSection);
+            }
+
+            // For each location, find nearest service and calculate route
+            for (const location of includedLocations) {
+                let minDistance = Infinity;
+                let nearestService = 0;
+                let bestRoute = null;
+
+                // Find nearest service
+                for (let i = 0; i < serviceCentroids.length; i++) {
+                    const control = L.Routing.control({
+                        waypoints: [
+                            L.latLng(location.coords[0], location.coords[1]),
+                            L.latLng(serviceCentroids[i].lat, serviceCentroids[i].lng)
+                        ],
+                        routeWhileDragging: false,
+                        lineOptions: {
+                            styles: [{ color: getServiceColor(i), opacity: 0.7, weight: 3 }]
+                        },
+                        show: false,
+                        addWaypoints: false
+                    });
+
+                    // Wait for route calculation
+                    const route = await new Promise(resolve => {
+                        control.on('routesfound', function(e) {
+                            resolve({
+                                control: control,
+                                summary: e.routes[0].summary,
+                                index: i
+                            });
+                        });
+                        control.addTo(map);
+                    });
+
+                    const distance = route.summary.totalDistance / 1000; // Convert to km
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestService = route.index;
+                        bestRoute = route;
+                    }
+
+                    if (route.control !== bestRoute.control) {
+                        map.removeControl(route.control);
+                    }
+                }
+
+                // Keep only the best route
+                routingControls.push(bestRoute.control);
+                
+                // Update statistics
+                const distance = Math.round(minDistance * 100) / 100;
+                const time = Math.round(bestRoute.summary.totalTime / 60);
+                totalSystemDistance += distance;
+                totalSystemTime += time;
+
+                // Add to appropriate service section
+                const serviceSection = locationsList.children[nearestService + 1];
+                const locationDiv = document.createElement('div');
+                locationDiv.className = 'location-item';
+                locationDiv.innerHTML = `
+                    <span class="location-name">${location.name}</span>
+                    <span class="location-distance">${distance} km (${time} min)</span>
+                `;
+                serviceSection.querySelector('.service-locations').appendChild(locationDiv);
+            }
+
+            // Update total system statistics
+            document.getElementById('totalDistance').textContent = 
+                Math.round(totalSystemDistance * 100) / 100 + ' km';
+            document.getElementById('totalTime').textContent = 
+                Math.round(totalSystemTime) + ' min';
+        }
+
+        // Function to get different colors for different services
+        function getServiceColor(index) {
+            const colors = ['#ff3366', '#33ff57', '#3366ff', '#ffff33', '#ff33ff'];
+            return colors[index % colors.length];
+        }
+
+        // Update deployServices function
+        async function deployServices() {
+            clearAll();
+
+            const bounds = {
+                minLat: 25.0777,
+                maxLat: 25.3667,
+                minLng: 55.1371,
+                maxLng: 55.5175
+            };
+
+            const randomLat = bounds.minLat + Math.random() * (bounds.maxLat - bounds.minLat);
+            const randomLng = bounds.minLng + Math.random() * (bounds.maxLng - bounds.minLng);
+
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+            userMarker = L.marker([randomLat, randomLng], {
+                icon: userIcon
+            }).addTo(map);
+
+            const k = parseInt(document.getElementById('numServices').value);
+            if (k < 1 || k > 5) {
+                alert('Please enter a number between 1 and 5');
+                return;
+            }
+
+            // Get included locations
+            const includedLocations = fixedLocations.filter(location => {
+                const distance = L.latLng(location.coords[0], location.coords[1])
+                    .distanceTo(userMarker.getLatLng()) / 1000;
+                return distance <= 20;
+            });
+
+            if (includedLocations.length < k) {
+                alert('Not enough locations within range for the requested number of services');
+                return;
+            }
+
+            // Calculate clusters
+            const centroids = kMeans(includedLocations, k);
+
+            // Add service markers
+            clusterMarkers.forEach(marker => map.removeLayer(marker));
+            clusterMarkers = [];
+
+            centroids.forEach((centroid, i) => {
+                const marker = L.marker([centroid.lat, centroid.lng], {
+                    icon: L.divIcon({
+                        className: 'cluster-marker',
+                        html: `<div style="background-color: ${getServiceColor(i)}">S${i + 1}</div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    })
+                }).addTo(map);
+
+                marker.bindPopup(`Service ${i + 1}`);
+                clusterMarkers.push(marker);
+            });
+
+            // Calculate and display routes
+            await calculateServiceDistances(includedLocations, centroids);
+
+            // Fit map bounds
+            const allPoints = [
+                userMarker.getLatLng(),
+                ...includedLocations.map(loc => L.latLng(loc.coords[0], loc.coords[1])),
+                ...centroids.map(c => L.latLng(c.lat, c.lng))
+            ];
+            map.fitBounds(L.latLngBounds(allPoints).pad(0.1));
+        }
+
+        // Update clear function
+        function clearAll() {
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+            routingControls.forEach(control => map.removeControl(control));
+            routingControls = [];
+            
+            // Reset all location markers to excluded style
+            locationMarkers.forEach(marker => map.removeLayer(marker));
+            locationMarkers = [];
+            fixedLocations.forEach(loc => {
+                const marker = L.marker(loc.coords, {
+                    icon: excludedIcon
+                }).addTo(map);
+                marker.bindPopup(loc.name);
+                locationMarkers.push(marker);
+            });
+
+            // Clear cluster markers
+            clusterMarkers.forEach(marker => map.removeLayer(marker));
+            clusterMarkers = [];
+
+            document.getElementById('totalDistance').textContent = '0 km';
+            document.getElementById('totalTime').textContent = '0 min';
+            document.getElementById('locationsList').innerHTML = '';
+            userMarker = null;
+        }
+
+        // Remove the map click handler
+        // map.on('click', function(e) { ... });
+
+        // Username display
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        function updateUsernameDisplay() {
+            let username = '';
+            username = getUrlParameter('username');
+            if (!username) {
+                username = sessionStorage.getItem('username');
+            }
+            if (username) {
+                document.getElementById('displayUsername').value = username;
+                sessionStorage.setItem('username', username);
+            }
+        }
+
+        window.onload = updateUsernameDisplay;
+
+        // K-means clustering implementation
+        function kMeans(points, k, maxIterations = 100) {
+            // Initialize centroids randomly from the points
+            let centroids = points.slice(0, k).map(p => ({
+                lat: p.coords[0],
+                lng: p.coords[1]
+            }));
+
+            let oldCentroids = [];
+            let iterations = 0;
+
+            while (iterations < maxIterations) {
+                // Assign points to nearest centroid
+                let clusters = Array(k).fill().map(() => []);
+                
+                points.forEach(point => {
+                    let minDist = Infinity;
+                    let clusterIndex = 0;
+                    
+                    centroids.forEach((centroid, i) => {
+                        let dist = L.latLng(point.coords[0], point.coords[1])
+                            .distanceTo(L.latLng(centroid.lat, centroid.lng));
+                        if (dist < minDist) {
+                            minDist = dist;
+                            clusterIndex = i;
+                        }
+                    });
+                    
+                    clusters[clusterIndex].push(point);
+                });
+
+                // Store old centroids
+                oldCentroids = JSON.parse(JSON.stringify(centroids));
+
+                // Calculate new centroids
+                clusters.forEach((cluster, i) => {
+                    if (cluster.length > 0) {
+                        let latSum = cluster.reduce((sum, p) => sum + p.coords[0], 0);
+                        let lngSum = cluster.reduce((sum, p) => sum + p.coords[1], 0);
+                        centroids[i] = {
+                            lat: latSum / cluster.length,
+                            lng: lngSum / cluster.length
+                        };
+                    }
+                });
+
+                // Check convergence
+                let converged = centroids.every((centroid, i) => 
+                    L.latLng(centroid.lat, centroid.lng)
+                        .distanceTo(L.latLng(oldCentroids[i].lat, oldCentroids[i].lng)) < 1);
+                
+                if (converged) break;
+                iterations++;
+            }
+
+            return centroids;
+        }
+    </script>
+</body>
+</html> 
